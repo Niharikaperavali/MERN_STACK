@@ -1,0 +1,21 @@
+.navbar{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+ul{
+    list-style: none;
+    background-color:pink;
+    padding: 10px;
+}
+.link{
+    background-color: white;
+    padding: 5px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: black;
+}
+.link:hover{
+    background-color: black;
+    color: white;
+}
