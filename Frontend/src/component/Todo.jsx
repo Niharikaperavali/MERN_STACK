@@ -3,39 +3,63 @@ import axios from "axios"
 
 const Todo = () => {
     const [task, setTask] = useState("");
-    const [todo, setTodo] = useState([]
-    );
-    const [editIndex, setEditIndex] = useState(null);
-    const fetchData=async(req,res)=>{
-     const responce=  await axios.get(`http://localhost:3000/api/todo/`)
-     setTodo(responce.data)
-    }
-     useEffect(()=>{
-        fetchData()
-     },[])
+    const [todo, setTodo] = useState([]);
+    const [editId, setEditId] = useState(null);
 
-    const handleAddOrUpdate = () => {
+    const API = "http://localhost:3000";
+
+    const fetchData = async () => {
+        try {
+            const response = await axios.get(`${API}/api/todo/`);
+            setTodo(response.data);
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const handleAddOrUpdate = async () => {
         if (task.trim() === "") return;
 
-        if (editIndex !== null) {
-            const updated = [...todo];
-            updated[editIndex].task = task;
-            setTodo(updated);
-            setEditIndex(null);
-        } else {
-            setTodo([...todo, { task, completed: false }]);
+        try {
+            if (editId) {
+                // UPDATE
+                await axios.put(`${API}/api/todo/update/${editId}`, { task });
+                setEditId(null);
+            } else {
+                // CREATE
+                await axios.post(`${API}/api/todo/create`, { task });
+            }
+
+            setTask("");
+            fetchData();
+        } catch (err) {
+            console.log(err);
         }
-        setTask("");
     };
 
-    const handleDelete = (index) => {
-        setTodo(todo.filter((_, i) => i !== index));
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`${API}/api/todo/delete/${id}`);
+            fetchData();
+        } catch (err) {
+            console.log(err);
+        }
     };
 
-    const handleToggleComplete = (index) => {
-        const updated = [...todo];
-        updated[index].completed = !updated[index].completed;
-        setTodo(updated);
+    const handleToggleComplete = async (item) => {
+        try {
+            await axios.put(`${API}/api/todo/update/${item._id}`, {
+                task: item.task,
+                completed: !item.completed
+            });
+            fetchData();
+        } catch (err) {
+            console.log(err);
+        }
     };
 
     const handleSubmit = (e) => {
@@ -56,14 +80,14 @@ const Todo = () => {
                     style={{ padding: "8px", width: "70%" }}
                 />
                 <button type="submit" style={{ padding: "8px 12px", marginLeft: "8px" }}>
-                    {editIndex !== null ? "Update" : "Add"}
+                    {editId ? "Update" : "Add"}
                 </button>
             </form>
 
             <ul style={{ listStyle: "none", padding: 0 }}>
-                {todo.map((item, index) => (
+                {todo.map((item) => (
                     <li
-                        key={index}
+                        key={item._id}
                         style={{
                             display: "flex",
                             justifyContent: "space-between",
@@ -75,7 +99,7 @@ const Todo = () => {
                         }}
                     >
                         <span
-                            onClick={() => handleToggleComplete(index)}
+                            onClick={() => handleToggleComplete(item)}
                             style={{
                                 textDecoration: item.completed ? "line-through" : "none",
                                 cursor: "pointer",
@@ -88,21 +112,21 @@ const Todo = () => {
                         <button
                             onClick={() => {
                                 setTask(item.task);
-                                setEditIndex(index);
+                                setEditId(item._id);
                             }}
                             style={{ marginRight: "6px" }}
                         >
                             Edit
                         </button>
 
-                        <button onClick={() => handleDelete(index)}>
+                        <button onClick={() => handleDelete(item._id)}>
                             Delete
                         </button>
                     </li>
                 ))}
             </ul>
         </div>
-    )
-}
+    );
+};
 
-export default Todo 
+export default Todo;
