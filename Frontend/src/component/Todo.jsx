@@ -1,11 +1,18 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import axios from "axios"
 
 const Todo = () => {
     const [task, setTask] = useState("");
-    const [todo, setTodo] = useState([
-        { task: "Reader", completed: false }
-    ]);
+    const [todo, setTodo] = useState([]
+    );
     const [editIndex, setEditIndex] = useState(null);
+    const fetchData=async(req,res)=>{
+     const responce=  await axios.get(`http://localhost:3000/api/todo/`)
+     setTodo(responce.data)
+    }
+     useEffect(()=>{
+        fetchData()
+     },[])
 
     const handleAddOrUpdate = () => {
         if (task.trim() === "") return;
@@ -98,4 +105,4 @@ const Todo = () => {
     )
 }
 
-export default Todo
+export default Todo 
